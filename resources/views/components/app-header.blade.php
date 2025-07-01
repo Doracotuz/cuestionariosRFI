@@ -19,10 +19,25 @@
             <nav class="header-nav">
                 <!-- Elementos de navegación principales -->
                 <a href="{{ route('dashboard') }}" class="{{ Request::routeIs('dashboard') ? 'active-link' : '' }}">Dashboard</a>
-                <a href="{{ route('admin.users.index') }}">Usuarios</a>
-                <a href="{{ route('admin.questionnaires.index') }}">Cuestionarios</a>
                 
+                <!-- Dropdown de Operaciones (para Admin) -->
+                @if(Auth::check() && Auth::user()->role === 'admin')
+                <div class="dropdown">
+                    <button class="dropbtn">
+                        Operaciones <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="{{ route('admin.users.index') }}">Usuarios</a>
+                        <a href="{{ route('admin.questionnaires.index') }}">Cuestionarios (Admin)</a> {{-- Etiquetado para claridad --}}
+                        <a href="{{ route('admin.assignments.index') }}">Asignaciones</a>
+                        <a href="{{ route('admin.responses.index') }}">Respuestas</a>
 
+                    </div>
+                </div>
+                @endif
+
+                <!-- Enlace a Cuestionarios para todos los usuarios autenticados -->
+                <a href="{{ route('user.questionnaires.index') }}" class="{{ Request::routeIs('user.questionnaires.index') ? 'active-link' : '' }}">Cuestionarios</a>
 
                 <!-- Sección de Perfil y Cerrar Sesión -->
                 @auth
@@ -34,7 +49,7 @@
                         <a href="{{ route('profile.edit') }}">Perfil</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit">Salir</button>
+                            <button type="submit">Cerrar Sesión</button>
                         </form>
                     </div>
                 </div>

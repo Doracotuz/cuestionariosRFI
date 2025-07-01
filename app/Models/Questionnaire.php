@@ -39,11 +39,19 @@ class Questionnaire extends Model
         return $this->hasMany(Section::class)->orderBy('order');
     }
 
-    // La relación `questions()` ya no será directamente en Questionnaire,
-    // sino a través de las secciones. Si la tenías, puedes eliminarla
-    // o modificarla para cargar preguntas a través de secciones (eager loading anidado).
-    // public function questions(): HasMany
-    // {
-    //     return $this->hasMany(Question::class)->orderBy('order');
-    // }
+    /**
+     * Get the assignments for the questionnaire.
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(QuestionnaireAssignment::class);
+    }
+
+    /**
+     * Get the responses for the questionnaire.
+     */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(QuestionnaireResponse::class);
+    }
 }

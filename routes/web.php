@@ -3,7 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-use Illuminate\Support\Facades\Auth; // Asegúrate de que esta línea esté presente
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\QuestionnaireController;
+use App\Http\Controllers\Admin\QuestionnaireAssignmentController;
+use App\Http\Controllers\Admin\QuestionnaireResponseController; // Asegúrate de importar este
+use App\Http\Controllers\User\UserQuestionnaireController; // Asegúrate de importar este
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +24,6 @@ use Illuminate\Support\Facades\Auth; // Asegúrate de que esta línea esté pres
 // Redirige la ruta raíz al login si no está autenticado
 Route::get('/', function () {
     if (Auth::check()) {
-        // Si el usuario ya está autenticado, redirige a su dashboard correspondiente
         if (Auth::user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         } else {
@@ -37,7 +41,6 @@ Route::middleware('auth')->group(function () {
 
 // Rutas protegidas por el middleware 'auth' (cualquier usuario autenticado)
 Route::middleware(['auth'])->group(function () {
-    // La ruta /dashboard ahora es más general o un fallback
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
@@ -49,23 +52,44 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Rutas para la gestión de usuarios
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Admin\UserController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Admin\UserController::class, 'store'])->name('store');
-        Route::get('/{user}/edit', [\App\Http\Controllers\Admin\UserController::class, 'edit'])->name('edit');
-        Route::patch('/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->name('update');
-        Route::delete('/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('destroy');
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::patch('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
     });
 
     // Rutas para la gestión de Cuestionarios
     Route::prefix('admin/questionnaires')->name('admin.questionnaires.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'store'])->name('store');
-        Route::get('/{questionnaire}', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'show'])->name('show');
-        Route::get('/{questionnaire}/edit', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'edit'])->name('edit');
-        Route::patch('/{questionnaire}', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'update'])->name('update');
-        Route::delete('/{questionnaire}', [\App\Http\Controllers\Admin\QuestionnaireController::class, 'destroy'])->name('destroy');
+        Route::get('/', [QuestionnaireController::class, 'index'])->name('index');
+        Route::get('/create', [QuestionnaireController::class, 'create'])->name('create');
+        Route::post('/', [QuestionnaireController::class, 'store'])->name('store');
+        Route::get('/{questionnaire}', [QuestionnaireController::class, 'show'])->name('show');
+        Route::get('/{questionnaire}/edit', [QuestionnaireController::class, 'edit'])->name('edit');
+        Route::patch('/{questionnaire}', [QuestionnaireController::class, 'update'])->name('update');
+        Route::delete('/{questionnaire}', [QuestionnaireController::class, 'destroy'])->name('destroy');
+    });
+
+    // Rutas para la gestión de Asignaciones de Cuestionarios
+    Route::prefix('admin/assignments')->name('admin.assignments.')->group(function () {
+        Route::get('/', [QuestionnaireAssignmentController::class, 'index'])->name('index');
+        Route::get('/create', [QuestionnaireAssignmentController::class, 'create'])->name('create');
+        Route::post('/', [QuestionnaireAssignmentController::class, 'store'])->name('store');
+        Route::delete('/{assignment}', [QuestionnaireAssignmentController::class, 'destroy'])->name('destroy');
+    });
+
+    // Rutas para la visualización y exportación de Respuestas de Cuestionarios
+    // ¡IMPORTANTE: Coloca las rutas más específicas (con más segmentos) primero!
+    Route::prefix('admin/responses')->name('admin.responses.')->group(function () {
+        // Ruta para exportar PDF de una respuesta específica (más específica)
+        Route::get('/{questionnaireResponse}/export/pdf', [QuestionnaireResponseController::class, 'exportPdf'])->name('export.pdf');
+        // Ruta para exportar todo a Excel (también específica)
+        Route::get('/export/excel', [QuestionnaireResponseController::class, 'exportExcel'])->name('export.excel');
+        // Ruta para mostrar los detalles de una respuesta (más general, va al final de este grupo)
+        Route::get('/{response}', [QuestionnaireResponseController::class, 'show'])->name('show');
+        // Ruta para listar todas las respuestas (la más general de todas, va al final)
+        Route::get('/', [QuestionnaireResponseController::class, 'index'])->name('index');
     });
 });
 
@@ -75,9 +99,12 @@ Route::middleware(['auth', 'user'])->group(function () {
         return view('user.dashboard');
     })->name('user.dashboard');
 
-    // Agrega más rutas de usuario aquí
+    // Rutas para que los usuarios respondan cuestionarios
+    Route::prefix('user/questionnaires')->name('user.questionnaires.')->group(function () {
+        Route::get('/', [UserQuestionnaireController::class, 'index'])->name('index');
+        Route::get('/{questionnaire}', [UserQuestionnaireController::class, 'show'])->name('show');
+        Route::post('/{questionnaire}/submit', [UserQuestionnaireController::class, 'submit'])->name('submit');
+    });
 });
 
-
 require __DIR__.'/auth.php';
-

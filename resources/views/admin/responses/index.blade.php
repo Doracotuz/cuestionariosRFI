@@ -56,7 +56,12 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('admin.responses.show', $response) }}" class="text-blue-600 hover:text-blue-900 mr-4">Ver Detalles</a>
-                                            <a href="{{ route('admin.responses.export.pdf', $response) }}" class="text-red-600 hover:text-red-900" target="_blank">Exportar a PDF</a> {{-- ¡NUEVO! --}}
+                                            <a href="{{ route('admin.responses.export.pdf', $response) }}" class="text-red-600 hover:text-red-900 mr-4" target="_blank">Exportar a PDF</a>
+                                            <form action="{{ route('admin.responses.destroy', $response) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta respuesta? Esto es irreversible.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-gray-600 hover:text-gray-900">Eliminar</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @empty

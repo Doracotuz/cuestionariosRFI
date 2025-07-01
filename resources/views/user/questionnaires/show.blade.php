@@ -2,20 +2,20 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             {{-- Título de la página --}}
-            <div class="bg-white shadow-sm sm:rounded-lg mb-6">
+            <!-- <div class="bg-white shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
                     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                         {{ __('Responder Cuestionario') }}
                     </h2>
                 </div>
-            </div>
+            </div> -->
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="mb-6">
                         <h3 class="text-2xl font-bold text-gray-800">{{ $questionnaire->title }}</h3>
                         <p class="text-gray-600 mt-2">{{ $questionnaire->description }}</p>
-                        <p class="text-sm text-gray-500 mt-2">Creado por: {{ $questionnaire->creator->name ?? 'N/A' }}</p>
+                        <!-- <p class="text-sm text-gray-500 mt-2">Creado por: {{ $questionnaire->creator->name ?? 'N/A' }}</p> -->
                     </div>
 
                     <form method="POST" action="{{ route('user.questionnaires.submit', $questionnaire) }}">
@@ -23,7 +23,7 @@
 
                         @forelse ($questionnaire->sections as $section)
                             <div class="section-block bg-gray-50 p-6 rounded-md shadow-sm mb-6 border border-gray-200">
-                                <h4 class="font-semibold text-xl text-gray-800 mb-3">Sección {{ $loop->iteration }}: {{ $section->title }}</h4>
+                                <h4 class="font-semibold text-xl text-gray-800 mb-3"> {{ $section->title }}</h4>
                                 @if ($section->description)
                                     <p class="text-gray-600 text-sm mb-4">{{ $section->description }}</p>
                                 @endif
@@ -38,7 +38,7 @@
                                     @endphp
 
                                     <div class="question-block bg-white p-4 rounded-md shadow-sm mb-4 border border-gray-100">
-                                        <p class="font-medium text-gray-700 mb-3"><strong>Q{{ $loop->iteration }}:</strong> {{ $question->text }}</p>
+                                        <p class="font-medium text-gray-700 mb-3"> {{ $question->text }}</p>
 
                                         <!-- Campo de Respuesta Principal -->
                                         <div class="mb-3">

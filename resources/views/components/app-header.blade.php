@@ -7,8 +7,10 @@
         </div>
         <nav class="header-nav">
             <!-- Elementos de navegación principales -->
+            @if(Auth::check() && Auth::user()->role === 'admin')
             <a href="{{ route('dashboard') }}" class="{{ Request::routeIs('dashboard') ? 'active-link' : '' }}">Dashboard</a>
-            
+            @endif
+
             <!-- Dropdown de Operaciones (para Admin) -->
             @if(Auth::check() && Auth::user()->role === 'admin')
             <div class="dropdown">

@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\QuestionnaireController;
 use App\Http\Controllers\Admin\QuestionnaireAssignmentController;
 use App\Http\Controllers\Admin\QuestionnaireResponseController; // Asegúrate de importar este
-use App\Http\Controllers\User\UserQuestionnaireController; // Asegúrate de importar este
+use App\Http\Controllers\User\UserQuestionnaireController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +27,7 @@ Route::get('/', function () {
         if (Auth::user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         } else {
-            return redirect()->route('user.dashboard');
+            return redirect()->route('user.questionnaires.index');
         }
     }
     return redirect()->route('login');
@@ -41,14 +41,15 @@ Route::middleware('auth')->group(function () {
 
 // Rutas protegidas por el middleware 'auth' (cualquier usuario autenticado)
 Route::middleware(['auth'])->group(function () {
+    // La ruta /dashboard ahora es principalmente para administradores o un fallback general.
+    // Los usuarios regulares serán redirigidos a cuestionarios directamente desde el login.
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 // Rutas solo para administradores
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    // La ruta /admin/dashboard ahora apunta al controlador de Dashboard para administradores
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Rutas para la gestión de usuarios
     Route::prefix('admin/users')->name('admin.users.')->group(function () {
@@ -88,6 +89,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/export/excel', [QuestionnaireResponseController::class, 'exportExcel'])->name('export.excel');
         // Ruta para mostrar los detalles de una respuesta (más general, va al final de este grupo)
         Route::get('/{response}', [QuestionnaireResponseController::class, 'show'])->name('show');
+        // Ruta para eliminar una respuesta (más específica que el index, pero menos que show/export)
+        Route::delete('/{response}', [QuestionnaireResponseController::class, 'destroy'])->name('destroy'); // ¡NUEVO!
         // Ruta para listar todas las respuestas (la más general de todas, va al final)
         Route::get('/', [QuestionnaireResponseController::class, 'index'])->name('index');
     });
@@ -95,9 +98,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 // Rutas para usuarios (incluye administradores por el UserMiddleware)
 Route::middleware(['auth', 'user'])->group(function () {
-    Route::get('/user/dashboard', function () {
-        return view('user.dashboard');
-    })->name('user.dashboard');
+    // Eliminado el dashboard de usuario si no es necesario
+    // Route::get('/user/dashboard', function () {
+    //     return view('user.dashboard');
+    // })->name('user.dashboard');
 
     // Rutas para que los usuarios respondan cuestionarios
     Route::prefix('user/questionnaires')->name('user.questionnaires.')->group(function () {

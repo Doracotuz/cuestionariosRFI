@@ -13,56 +13,58 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="mb-6">
-                        <h3 class="text-2xl font-bold text-gray-800">{{ $response->questionnaire->title }}</h3>
-                        <p class="text-gray-600 mt-2">{{ $response->questionnaire->description }}</p>
+                        <h3 class="text-2xl font-bold text-gray-800">{{ $response->questionnaire->title ?? 'Cuestionario Desconocido' }}</h3>
+                        <p class="text-gray-600 mt-2">{{ $response->questionnaire->description ?? 'N/A' }}</p>
                         <p class="text-sm text-gray-500 mt-2">
-                            Respondido por: <span class="font-medium">{{ $response->user->name }} ({{ $response->user->email }})</span>
-                            el {{ $response->submitted_at->format('d/m/Y H:i') }}
+                            Respondido por: <span class="font-medium">{{ $response->user->name ?? 'N/A' }} ({{ $response->user->email ?? 'N/A' }})</span>
+                            el {{ $response->submitted_at ? $response->submitted_at->format('d/m/Y H:i') : 'N/A' }}
                         </p>
                     </div>
 
-                    @forelse ($response->questionnaire->sections as $section)
+                    @php
+                        // Crear un mapa de respuestas para un acceso más eficiente
+                        $answersMap = $response->answers->keyBy('question_id');
+                    @endphp
+
+                    @forelse ($response->questionnaire->sections ?? [] as $section)
                         <div class="section-block bg-gray-50 p-6 rounded-md shadow-sm mb-6 border border-gray-200">
-                            <h4 class="font-semibold text-xl text-gray-800 mb-3">Sección {{ $loop->iteration }}: {{ $section->title }}</h4>
+                            <h4 class="font-semibold text-xl text-gray-800 mb-3"> {{ $section->title ?? 'N/A' }}</h4>
                             @if ($section->description)
-                                <p class="text-gray-600 text-sm mb-4">{{ $section->description }}</p>
+                                <p class="text-gray-600 text-sm mb-4">{{ $section->description ?? 'N/A' }}</p>
                             @endif
 
-                            @forelse ($section->questions as $question)
+                            @forelse ($section->questions ?? [] as $question)
                                 @php
-                                    // Encontrar la respuesta específica para esta pregunta dentro de la colección de respuestas
-                                    $userAnswer = $response->answers->where('question_id', $question->id)->first();
+                                    // Acceder a la respuesta del usuario a través del mapa
+                                    $userAnswer = $answersMap->get($question->id);
                                 @endphp
 
                                 <div class="question-block bg-white p-4 rounded-md shadow-sm mb-4 border border-gray-100">
-                                    <p class="font-medium text-gray-700 mb-3"><strong>Q{{ $loop->iteration }}:</strong> {{ $question->text }}</p>
+                                    <p class="font-medium text-gray-700 mb-3"> {{ $question->text ?? 'N/A' }}</p>
 
                                     <div class="mb-3">
                                         <p class="block font-medium text-sm text-gray-700">Tu Respuesta:</p>
                                         @if ($question->type === 'text')
-                                            <p class="text-gray-800 mt-1 p-2 border border-gray-200 rounded-md bg-gray-50">{{ $userAnswer->answer_text ?? 'No respondido' }}</p>
+                                            <p class="answer-content">{{ $userAnswer->answer_text ?? 'No respondido' }}</p>
                                         @elseif ($question->type === 'multiple_choice')
-                                            <ul class="list-disc list-inside ml-4 text-sm text-gray-800 mt-1">
-                                                @foreach ($question->options as $option)
-                                                    <li class="{{ ($userAnswer && $userAnswer->selected_option_id == $option->id) ? 'font-bold text-indigo-700' : 'text-gray-700' }}">
-                                                        {{ $option->option_text }}
-                                                        @if ($userAnswer && $userAnswer->selected_option_id == $option->id)
-                                                            <i class="fas fa-check-circle text-indigo-600 ml-2"></i>
-                                                        @endif
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                            @if (!$userAnswer)
-                                                <p class="text-gray-500 mt-1">No respondido</p>
+                                            {{-- Mostrar todas las opciones seleccionadas --}}
+                                            @if ($userAnswer && $userAnswer->selectedOptions->isNotEmpty())
+                                                <ul class="list-disc list-inside ml-4 text-sm text-gray-800 mt-1">
+                                                    @foreach ($userAnswer->selectedOptions as $selectedOption)
+                                                        <li>✓ {{ $selectedOption->option_text ?? 'N/A' }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <p class="answer-content">No respondido</p>
                                             @endif
                                         @endif
                                     </div>
 
                                     <!-- Campo de Observaciones -->
-                                    @if ($question->observations_enabled)
+                                    @if ($question->observations_enabled && ($userAnswer->observations ?? null))
                                         <div class="mb-3">
                                             <p class="block font-medium text-sm text-gray-700">Observaciones:</p>
-                                            <p class="text-gray-800 mt-1 p-2 border border-gray-200 rounded-md bg-gray-50">{{ $userAnswer->observations ?? 'Ninguna' }}</p>
+                                            <p class="answer-content">{{ $userAnswer->observations }}</p>
                                         </div>
                                     @endif
                                 </div>

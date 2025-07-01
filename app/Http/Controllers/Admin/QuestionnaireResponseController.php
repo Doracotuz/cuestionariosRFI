@@ -10,6 +10,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Http\RedirectResponse; // Importar para el método destroy
 
 class QuestionnaireResponseController extends Controller
 {
@@ -164,5 +165,14 @@ class QuestionnaireResponseController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * Remove the specified questionnaire response from storage.
+     */
+    public function destroy(QuestionnaireResponse $response): RedirectResponse
+    {
+        $response->delete();
+        return redirect()->route('admin.responses.index')->with('success', 'Respuesta eliminada exitosamente.');
     }
 }

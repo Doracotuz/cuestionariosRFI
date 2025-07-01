@@ -32,7 +32,8 @@ class AuthenticatedSessionController extends Controller
         if (Auth::user()->role === 'admin') {
             return redirect()->intended(route('admin.dashboard', absolute: false));
         } else {
-            return redirect()->intended(route('user.dashboard', absolute: false));
+            // Redirige a los usuarios regulares directamente a la lista de cuestionarios
+            return redirect()->intended(route('user.questionnaires.index', absolute: false));
         }
     }
 

@@ -184,7 +184,7 @@ class UserQuestionnaireController extends Controller
                 'answers.selectedOptions' // Cargar las opciones seleccionadas para el PDF
             ]);
 
-            $logoPath = public_path('images/logoBlanco.png');
+            $logoPath = public_path('images/LogoAzul.png');
             $logoBase64 = null;
             if (file_exists($logoPath)) {
                 $type = pathinfo($logoPath, PATHINFO_EXTENSION);

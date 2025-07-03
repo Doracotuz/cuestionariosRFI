@@ -138,6 +138,27 @@
             display: block;
         }
 
+        /* Mensajes de éxito y error */
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+
         .btn-login {
             background: #ff9c00;
             color: #fff;
@@ -233,7 +254,26 @@
         </div>
         <h1>Restablecer Contraseña</h1>
         <p class="tagline">Establezca su nueva contraseña.</p>
-        <form method="POST" action="{{ route('password.update') }}">
+
+        {{-- Mostrar mensaje de éxito si existe --}}
+        @if (session('status'))
+            <div class="success-message">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        {{-- Mostrar mensajes de error de validación --}}
+        @if ($errors->any())
+            <div class="alert-error">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('password.store') }}">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
             <div class="form-group">

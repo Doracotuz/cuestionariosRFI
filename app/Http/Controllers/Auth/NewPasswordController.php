@@ -20,7 +20,12 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
-        return view('auth.reset-password', ['request' => $request]);
+        // CORRECCIÓN CLAVE: Pasar 'token' y 'email' explícitamente a la vista
+        return view('auth.reset-password', [
+            'request' => $request,
+            'email' => $request->email, // El email viene como parámetro de la URL
+            'token' => $request->route('token'), // El token viene como parámetro de la ruta
+        ]);
     }
 
     /**
@@ -50,6 +55,8 @@ class NewPasswordController extends Controller
                 event(new PasswordReset($user));
             }
         );
+
+        \Log::info('Password reset status: ' . $status);
 
         // If the password was successfully reset, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\QuestionnaireController;
 use App\Http\Controllers\Admin\QuestionnaireAssignmentController;
 use App\Http\Controllers\Admin\QuestionnaireResponseController; // Asegúrate de importar este
 use App\Http\Controllers\User\UserQuestionnaireController;
+use App\Http\Controllers\PrivacyPolicyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,16 @@ Route::get('/', function () {
     }
     return redirect()->route('login');
 });
+
+// Politica de privacidad
+Route::get('/privacy-policy', [PrivacyPolicyController::class, 'index'])->name('privacy-policy');
+Route::get('/terms-conditions', function () {
+    return view('terms-conditions');
+})->name('terms-conditions');
+
+Route::get('/cookies-policy', function () {
+    return view('cookies-policy');
+})->name('cookies-policy');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

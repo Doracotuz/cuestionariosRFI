@@ -7,17 +7,17 @@ use App\Models\Questionnaire;
 use App\Models\QuestionnaireResponse;
 use App\Models\AnswerSubmission;
 use App\Models\QuestionnaireAssignment;
-use App\Models\User; // Importar el modelo User para obtener administradores
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule; // Importar el facade Rule
-use Illuminate\Support\Facades\Mail; // Importar el facade Mail
-use Dompdf\Dompdf; // Para PDF
-use Dompdf\Options; // Para PDF
-use App\Mail\QuestionnaireSubmittedNotification; // Importar el Mailable
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use App\Mail\QuestionnaireSubmittedNotification;
 
 class UserQuestionnaireController extends Controller
 {
@@ -184,7 +184,8 @@ class UserQuestionnaireController extends Controller
                 'answers.selectedOptions' // Cargar las opciones seleccionadas para el PDF
             ]);
 
-            $logoPath = public_path('images/LogoAzul.png');
+            // Obtener el logo en base64 para incrustarlo en el PDF
+            $logoPath = public_path('images/LogoAzul.png'); // <-- Usar LogoAzul.png para el correo
             $logoBase64 = null;
             if (file_exists($logoPath)) {
                 $type = pathinfo($logoPath, PATHINFO_EXTENSION);
@@ -206,7 +207,7 @@ class UserQuestionnaireController extends Controller
             $adminEmails = User::where('role', 'admin')->pluck('email')->toArray();
 
             if (!empty($adminEmails)) {
-                Mail::to($adminEmails)->send(new QuestionnaireSubmittedNotification($questionnaireResponse, $pdfContent));
+                Mail::to($adminEmails)->send(new QuestionnaireSubmittedNotification($questionnaireResponse, $pdfContent, $logoBase64)); // Pasar logoBase64
             }
             // --- Fin lógica para generar PDF y enviar correo ---
         });

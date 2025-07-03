@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use App\Models\QuestionnaireResponse; // Importar el modelo
+use App\Models\QuestionnaireResponse;
 
 class QuestionnaireSubmittedNotification extends Mailable
 {
@@ -17,14 +17,16 @@ class QuestionnaireSubmittedNotification extends Mailable
 
     public $questionnaireResponse;
     public $pdfContent;
+    public $logoBase64; // <-- Añadido
 
     /**
      * Create a new message instance.
      */
-    public function __construct(QuestionnaireResponse $questionnaireResponse, $pdfContent)
+    public function __construct(QuestionnaireResponse $questionnaireResponse, $pdfContent, $logoBase64 = null) // <-- Añadido $logoBase64
     {
         $this->questionnaireResponse = $questionnaireResponse;
         $this->pdfContent = $pdfContent;
+        $this->logoBase64 = $logoBase64; // <-- Asignado
     }
 
     /**
@@ -33,7 +35,7 @@ class QuestionnaireSubmittedNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Cuestionario Completado: ' . $this->questionnaireResponse->questionnaire->title,
+            subject: 'Cuestionario Completado: ' . ($this->questionnaireResponse->questionnaire->title ?? 'N/A'),
         );
     }
 
@@ -42,10 +44,12 @@ class QuestionnaireSubmittedNotification extends Mailable
      */
     public function content(): Content
     {
+        // Cambiado a una vista HTML pura para más control de estilo
         return new Content(
-            markdown: 'emails.questionnaire-submitted', // Usaremos una vista Markdown simple
+            view: 'emails.questionnaire-submitted-report', // <-- Apunta a la nueva vista HTML
             with: [
                 'response' => $this->questionnaireResponse,
+                'logoBase64' => $this->logoBase64, // <-- Pasado a la vista
             ],
         );
     }

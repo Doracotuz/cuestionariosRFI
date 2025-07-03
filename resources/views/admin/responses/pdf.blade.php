@@ -108,12 +108,6 @@
             font-weight: bold;
             color: #2980b9; /* Color para la opción seleccionada */
         }
-        /* Eliminado el content: "\2713"; que causaba el signo de interrogación */
-        /* .options-list li.selected::before {
-            content: "\2713";
-            margin-right: 5px;
-            color: #2980b9;
-        } */
         .observations-content {
             font-size: 10pt;
             color: #333;
@@ -129,14 +123,14 @@
             padding-top: 20px;
             border-top: 1px dashed #ccc; /* Línea divisoria sutil */
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between; /* <-- CLAVE: Distribuye los elementos a los extremos */
             flex-wrap: wrap; /* Para responsividad en caso de muchos campos */
-            gap: 40px; /* Espacio entre las firmas */
+            gap: 20px; /* Ajustado el espacio entre las firmas */
         }
         .signature-block {
             text-align: center;
-            width: 45%; /* Ajusta el ancho para que quepan dos en una línea */
-            min-width: 250px; /* Mínimo para evitar que se aprieten demasiado */
+            width: 48%; /* <-- Ajustado para que quepan dos en una línea con espacio */
+            min-width: 200px; /* Mínimo para evitar que se aprieten demasiado */
         }
         .signature-line {
             border-bottom: 1px solid #000;
@@ -243,6 +237,9 @@
                 <p class="signature-label">Representante Minmer Global</p>
                 <p class="signature-role">Dirección</p>
             </div>
+            <br>
+            <br>
+            
             <div class="signature-block">
                 <div class="signature-line"></div>
                 <p class="signature-label">Proveedor Interesado</p>
@@ -251,7 +248,7 @@
         </div>
 
         <footer>
-            <p>&copy; {{ date('Y') }} Cuestionarios RFI. Todos los derechos reservados.</p>
+            <p>&copy; {{ date('Y') }} Estrategias y soluciones Minmer Global. Todos los derechos reservados.</p>
         </footer>
     </div>
 </body>

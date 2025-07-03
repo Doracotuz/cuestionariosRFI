@@ -28,10 +28,10 @@
                         </p>
                     </div>
 
-                    <h4 class="text-lg font-semibold mt-6 mb-4">Secciones:</h4>
+                    <!-- <h4 class="text-lg font-semibold mt-6 mb-4">Secciones:</h4> -->
                     @forelse ($questionnaire->sections as $section)
                         <div class="bg-white p-6 rounded-md shadow-sm mb-6 border border-gray-200">
-                            <h5 class="font-semibold text-gray-800 mb-2">Sección {{ $loop->iteration }}: {{ $section->title }}</h5>
+                            <h5 class="font-semibold text-gray-800 mb-2"> {{ $section->title }}</h5>
                             @if ($section->description)
                                 <p class="text-gray-600 text-sm mb-4">{{ $section->description }}</p>
                             @endif
@@ -39,7 +39,7 @@
                             <h6 class="text-md font-semibold mt-4 mb-3">Preguntas:</h6>
                             @forelse ($section->questions as $question)
                                 <div class="bg-gray-50 p-4 rounded-md shadow-sm mb-3 border border-gray-200">
-                                    <p class="font-medium text-gray-700 mb-2"><strong>Q{{ $loop->iteration }}:</strong> {{ $question->text }}</p>
+                                    <p class="font-medium text-gray-700 mb-2"> {{ $question->text }}</p>
                                     <p class="text-sm text-gray-600 mb-2">Tipo: {{ ucfirst(str_replace('_', ' ', $question->type)) }}</p>
 
                                     @if ($question->type === 'multiple_choice' && $question->options->isNotEmpty())

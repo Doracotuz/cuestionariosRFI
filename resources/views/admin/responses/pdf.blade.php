@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Cuestionario - {{ $questionnaireResponse->questionnaire->title ?? 'Cuestionario Desconocido' }}</title>
     <style>
-        /* Definir la fuente Century Gothic */
+        /* Estilos generales para el PDF */
         body {
-            font-family: 'Century Gothic', 'Helvetica', 'Arial', sans-serif;
+            font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             color: #333;
@@ -29,7 +29,7 @@
             border-bottom: 2px solid #eee;
         }
         header img {
-            max-width: 150px;
+            max-width: 150px; /* Ajusta el tamaño del logo */
             height: auto;
             margin-bottom: 10px;
         }
@@ -92,7 +92,7 @@
             padding: 8px 12px;
             border-radius: 5px;
             border: 1px solid #eee;
-            word-wrap: break-word;
+            word-wrap: break-word; /* Para texto largo */
         }
         .options-list {
             list-style: none;
@@ -106,8 +106,14 @@
         }
         .options-list li.selected {
             font-weight: bold;
-            color: #2980b9;
+            color: #2980b9; /* Color para la opción seleccionada */
         }
+        /* Eliminado el content: "\2713"; que causaba el signo de interrogación */
+        /* .options-list li.selected::before {
+            content: "\2713";
+            margin-right: 5px;
+            color: #2980b9;
+        } */
         .observations-content {
             font-size: 10pt;
             color: #333;
@@ -117,6 +123,35 @@
             border: 1px solid #eee;
             margin-top: 5px;
             word-wrap: break-word;
+        }
+        .signatures-section {
+            margin-top: 50px; /* Espacio antes de las firmas */
+            padding-top: 20px;
+            border-top: 1px dashed #ccc; /* Línea divisoria sutil */
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap; /* Para responsividad en caso de muchos campos */
+            gap: 40px; /* Espacio entre las firmas */
+        }
+        .signature-block {
+            text-align: center;
+            width: 45%; /* Ajusta el ancho para que quepan dos en una línea */
+            min-width: 250px; /* Mínimo para evitar que se aprieten demasiado */
+        }
+        .signature-line {
+            border-bottom: 1px solid #000;
+            width: 80%;
+            margin: 0 auto 5px auto; /* Centra la línea y da espacio abajo */
+        }
+        .signature-label {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        .signature-role {
+            font-size: 8pt;
+            color: #666;
         }
         footer {
             text-align: center;
@@ -134,6 +169,7 @@
             @if ($logoBase64)
                 <img src="{{ $logoBase64 }}" alt="Logo">
             @else
+                <!-- Fallback si el logo no se carga -->
                 <h1>Cuestionarios RFI</h1>
             @endif
             <h1>Reporte de Cuestionario</h1>
@@ -143,36 +179,41 @@
             <p><strong>Cuestionario:</strong> {{ $questionnaireResponse->questionnaire->title ?? 'N/A' }}</p>
             <p><strong>Descripción:</strong> {{ $questionnaireResponse->questionnaire->description ?? 'N/A' }}</p>
             <p><strong>Respondido por:</strong> {{ $questionnaireResponse->user->name ?? 'N/A' }} ({{ $questionnaireResponse->user->email ?? 'N/A' }})</p>
-            <p><strong>Fecha de Envío:</strong> {{ $questionnaireResponse->submitted_at ? $questionnaireResponse->submitted_at->format('d/m/Y H:i') : 'N/A' }}</p95>
+            <p><strong>Fecha de Envío:</strong> {{ $questionnaireResponse->submitted_at ? $questionnaireResponse->submitted_at->format('d/m/Y H:i') : 'N/A' }}</p>
         </div>
 
         @php
+            // Crear un mapa de respuestas para un acceso más eficiente
             $answersMap = $questionnaireResponse->answers->keyBy('question_id');
         @endphp
 
         @forelse ($questionnaireResponse->questionnaire->sections ?? [] as $section)
-            <h2 class="section-title">{{ $section->title ?? 'N/A' }}</h2>
+            <h2 class="section-title">Sección {{ $loop->iteration }}: {{ $section->title ?? 'N/A' }}</h2>
             @if ($section->description)
                 <p class="section-description">{{ $section->description ?? 'N/A' }}</p>
             @endif
 
             @forelse ($section->questions ?? [] as $question)
                 @php
+                    // Acceder a la respuesta del usuario a través del mapa
                     $userAnswer = $answersMap->get($question->id);
                 @endphp
 
                 <div class="question-block">
-                    <p class="question-text">{{ $question->text ?? 'N/A' }}</p>
+                    <p class="question-text">Q{{ $loop->iteration }}: {{ $question->text ?? 'N/A' }}</p>
 
                     <div class="answer-section">
-                        <span class="answer-label">Respuesta:</span>
+                        <span class="answer-label">Tu Respuesta:</span>
                         @if ($question->type === 'text')
                             <p class="answer-content">{{ $userAnswer->answer_text ?? 'No respondido' }}</p>
                         @elseif ($question->type === 'multiple_choice')
+                            {{-- Mostrar todas las opciones seleccionadas --}}
                             @if ($userAnswer && $userAnswer->selectedOptions->isNotEmpty())
                                 <ul class="options-list">
                                     @foreach ($userAnswer->selectedOptions as $selectedOption)
-                                        <li class="selected"> {{ $selectedOption->option_text ?? 'N/A' }}</li>
+                                        <li class="selected">
+                                            ✓ {{ $selectedOption->option_text ?? 'N/A' }} {{-- Añadido el tick directamente en HTML --}}
+                                        </li>
                                     @endforeach
                                 </ul>
                             @else
@@ -181,6 +222,7 @@
                         @endif
                     </div>
 
+                    {{-- Solo muestra las observaciones si hay contenido --}}
                     @if ($question->observations_enabled && ($userAnswer->observations ?? null))
                         <div class="observations-section" style="margin-top: 15px;">
                             <span class="answer-label">Observaciones:</span>
@@ -195,8 +237,21 @@
             <p style="font-size: 9pt; color: #777;">Este cuestionario no tenía secciones ni preguntas.</p>
         @endforelse
 
+        <div class="signatures-section">
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <p class="signature-label">Representante Minmer Global</p>
+                <p class="signature-role">Dirección</p>
+            </div>
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <p class="signature-label">Proveedor Interesado</p>
+                <p class="signature-role">Ventas</p>
+            </div>
+        </div>
+
         <footer>
-            <p>© {{ date('Y') }} Estrategias y Soluciones Minmer Global. Todos los derechos reservados.</p>
+            <p>&copy; {{ date('Y') }} Cuestionarios RFI. Todos los derechos reservados.</p>
         </footer>
     </div>
 </body>
